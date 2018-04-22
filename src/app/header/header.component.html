@@ -1,0 +1,98 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">На главную</a>
+    <button type="button" class="navbar-toggler">
+        <span class="navbar-toggler-icon" (click)="showNavBar()"></span>
+    </button>
+    <div class="collapse navbar-collapse" [class.show]="showMenu">
+        <ul class="navbar-nav mr-auto">
+            <!--<li class="nav-item active">-->
+            <li class="nav-item">
+                <a class="nav-link" href="#">Админка</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Для пользователя</a>
+            </li>
+        </ul>
+        <form class="form-inline">
+            <button type="button" class="btn btn-primary mb-2 mr-2" (click)="showRegistrModal()">Регистрация</button>
+            <div class="form-group mb-2">
+                <input class="form-control" id="email" placeholder="Email">
+            </div>
+            <div class="form-group mx-sm-3 mb-2">
+                <input type="password" class="form-control" id="password" placeholder="Password">
+            </div>
+            <button type="button" class="btn btn-primary mb-2">Вход</button>
+        </form>
+        <span class="navbar-text">
+            Пользователь: User1
+        </span>
+    </div>
+</nav>
+
+
+
+<!-- Modal регистрация -->
+<div class="modal fade bd-example-modal-lg info" [class.show]="registrModal">
+    <div class="modal-dialog modal-lg" role="document" *ngIf="registrModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="mx-auto">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Регистрация</h5>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span (click)="hideRegistrModal()">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container info-block">
+                    <div class="row info-row">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <label for="login" class="input-group-text cursor-pointer">Логин</label>
+                            </div>
+                            <input id="login" class="form-control" [class.error-input]="false" placeholder="Введите логин"
+                                   name="login">
+                        </div>
+                        <span class="error-message mx-auto mb-3">Пожалуйста, заполните поле «Логин»</span>
+
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <label for="registrationEmail" class="input-group-text cursor-pointer">Email</label>
+                            </div>
+                            <input id="registrationEmail" class="form-control" placeholder="Введите email"
+                                   name="registrationEmail">
+                        </div>
+                        <span class="error-message mx-auto mb-3">Пожалуйста, заполните поле «Email»</span>
+                        <span class="error-message mx-auto mb-3">Данный email занят</span>
+                        <span class="error-message mx-auto mb-3">Email заполнен не верно</span>
+
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <label for="registrationPassword" class="input-group-text cursor-pointer">Пароль</label>
+                            </div>
+                            <input type="password" id="registrationPassword" class="form-control" placeholder="Введите пароль"
+                                   name="registrationPassword">
+                        </div>
+                        <span class="error-message mx-auto mb-3">Пароль заполнен не верно</span>
+
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <label for="registrationPasswordRepeat" class="input-group-text cursor-pointer">Подтвердите пароль</label>
+                            </div>
+                            <input type="password" id="registrationPasswordRepeat" class="form-control" placeholder="Введите пароль"
+                                   name="registrationPasswordRepeat">
+                        </div>
+                        <span class="error-message mx-auto mb-3">Пароли не совпадают</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="mx-auto">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="hideRegistrModal()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

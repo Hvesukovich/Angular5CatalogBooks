@@ -1,0 +1,11 @@
+.show{
+    display: block;
+}
+
+.error-message{
+    color: red;
+}
+
+.error-input{
+    border-color: red;
+}
