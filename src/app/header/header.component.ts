@@ -11,22 +11,72 @@ import { UserService } from '../user.service';
 export class HeaderComponent implements OnInit {
     public showMenu: boolean;
     public registrModal: boolean;
-    public formSubmitted: boolean;
+    public formRegisterSubmitted: boolean;
+    public formLoginSubmitted: boolean;
     public loading: boolean;
     public errorMessage: string;
     public statusUserSave: boolean;
 
+    public loginForm: FormGroup;
     public regForm: FormGroup;
     @ViewChild('password') password: ElementRef;
     @ViewChild('passwordRepeat') passwordRepeat: ElementRef;
 
     constructor(private formBuilder: FormBuilder,
                 private requestService: RequestService,
-                private userService: UserService) {
+                public userService: UserService) {
     }
 
     ngOnInit() {
-        this.initForm();
+        if (!this.userService.activeUser) {
+            this.initLoginForm();
+        }
+    }
+
+    private initLoginForm(): void {
+        this.loginForm = this.formBuilder.group({
+            email: ['', [
+                Validators.required, Validators.email
+            ]
+            ],
+            password: ['',
+                Validators.compose([
+                    Validators.required
+                ])
+            ]}
+            );
+    }
+
+    public onLoginSubmit(value: any): void {
+        this.formLoginSubmitted = true;
+        const controls = this.loginForm.controls;
+
+        if (this.loginForm.invalid) {
+            Object.keys(controls)
+                .forEach(controlName => controls[controlName].markAsTouched());
+            return;
+        }
+
+        const dataVerification = { email: value.email, password: value.password };
+        this.requestService.verificationUser(dataVerification)
+            .subscribe(result => {
+                    if (result) {
+                        if (result['error']) {
+                            console.log('Проверьте правильность ввода данных');
+                        } else {
+                            this.userService.saveUserInfoInLocalStorage(result[0]);
+                            this.userService.setActiveUser(result[0]['login']);
+                            this.loginForm.get('email').reset();
+                            this.loginForm.get('password').reset();
+                        }
+                    }
+                },
+                error => {
+                    this.loading = false;
+                    // TODO: разбор ошибок
+                }
+            );
+
     }
 
     public showNavBar(): void {
@@ -35,10 +85,11 @@ export class HeaderComponent implements OnInit {
 
     public showRegistrModal(): void {
         this.registrModal = true;
+        this.initRegForm();
     }
 
     public hideRegistrModal(): void {
-        this.formSubmitted = false;
+        this.formRegisterSubmitted = false;
         this.registrModal = false;
         this.regForm.get('login').reset();
         this.regForm.get('email').reset();
@@ -49,7 +100,7 @@ export class HeaderComponent implements OnInit {
         this.errorMessage = '';
     }
 
-    private initForm() {
+    private initRegForm(): void {
         this.regForm = this.formBuilder.group({
             login: ['', [
                 Validators.required
@@ -82,11 +133,9 @@ export class HeaderComponent implements OnInit {
         };
     }
 
-    public registration(value: any) {
-        this.formSubmitted = true;
+    public registration(value: any): void {
+        this.formRegisterSubmitted = true;
         const controls = this.regForm.controls;
-
-        console.log(value.email);
 
         if (this.regForm.invalid) {
             Object.keys(controls)
@@ -107,8 +156,10 @@ export class HeaderComponent implements OnInit {
                         } else {
                             this.statusUserSave = true;
                             this.errorMessage = '';
+                            this.userService.saveUserInfoInLocalStorage(result);
+                            this.userService.setActiveUser(result['login']);
+                            setTimeout( () => this.hideRegistrModal(), 2000);
                         }
-                        // this.userService
                     }
                 },
                 error => {
@@ -116,8 +167,6 @@ export class HeaderComponent implements OnInit {
                     // TODO: разбор ошибок
                 }
             );
-
-        console.log(this.regForm.value);
     }
 
     public showPassword(): void {
@@ -128,6 +177,10 @@ export class HeaderComponent implements OnInit {
             this.password.nativeElement.type = 'password';
             this.passwordRepeat.nativeElement.type = 'password';
         }
+    }
+
+    public outUser(): void {
+        this.userService.outUser();
     }
 
 }

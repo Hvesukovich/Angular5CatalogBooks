@@ -13,19 +13,24 @@
                 <a class="nav-link" href="#">Для пользователя</a>
             </li>
         </ul>
-        <form class="form-inline">
+        <form *ngIf="!userService.activeUser" class="form-inline" [formGroup]="loginForm" (submit)="onLoginSubmit(loginForm.value)">
             <button type="button" class="btn btn-primary mb-2 mr-2" (click)="showRegistrModal()">Регистрация</button>
             <div class="form-group mb-2">
-                <input class="form-control" id="email" placeholder="Email">
+                <input class="form-control" id="email" placeholder="Email"
+                       [class.error-input]="loginForm.get('email').invalid && formLoginSubmitted"
+                       formControlName="email">
             </div>
             <div class="form-group mx-sm-3 mb-2">
-                <input type="password" class="form-control" id="password" placeholder="Password">
+                <input type="password" class="form-control" id="password" placeholder="Password"
+                       [class.error-input]="loginForm.get('password').invalid && formLoginSubmitted"
+                       formControlName="password">
             </div>
-            <button type="button" class="btn btn-primary mb-2">Вход</button>
+            <button class="btn btn-primary mb-2">Вход</button>
         </form>
-        <span class="navbar-text">
-            Пользователь: User1
+        <span *ngIf="userService.activeUser" class="navbar-text mr-3">
+            {{ userService.activeUser }}
         </span>
+        <button *ngIf="userService.activeUser" type="button" class="btn btn-primary" (click)="outUser()">Выход</button>
     </div>
 </nav>
 
@@ -51,10 +56,10 @@
                                 <label for="login" class="input-group-text cursor-pointer">Логин</label>
                             </div>
                             <input id="login" class="form-control"
-                                   [class.error-input]="regForm.get('login').invalid && formSubmitted"
+                                   [class.error-input]="regForm.get('login').invalid && formRegisterSubmitted"
                                    placeholder="Введите логин" name="login" formControlName="login">
                         </div>
-                        <span *ngIf="regForm.get('login').hasError('required') && formSubmitted"
+                        <span *ngIf="regForm.get('login').hasError('required') && formRegisterSubmitted"
                               class="error-message mx-auto">Пожалуйста, заполните поле «Логин»</span>
 
                         <div class="input-group mt-3">
@@ -62,14 +67,14 @@
                                 <label for="registrationEmail" class="input-group-text cursor-pointer">Email</label>
                             </div>
                             <input id="registrationEmail" class="form-control"
-                                   [class.error-input]="regForm.get('email').invalid && formSubmitted"
+                                   [class.error-input]="regForm.get('email').invalid && formRegisterSubmitted"
                                    placeholder="Введите email" name="registrationEmail" formControlName="email">
                         </div>
-                        <span *ngIf="regForm.get('email').hasError('required') && formSubmitted"
+                        <span *ngIf="regForm.get('email').hasError('required') && formRegisterSubmitted"
                               class="error-message mx-auto">Пожалуйста, заполните поле «Email»</span>
-                        <span *ngIf="regForm.get('email').hasError('email') && formSubmitted && regForm.get('email').value !== ''"
+                        <span *ngIf="regForm.get('email').hasError('email') && formRegisterSubmitted && regForm.get('email').value !== ''"
                               class="error-message mx-auto">Поле "Email" заполнен не верно</span>
-                        <span *ngIf="regForm.get('email').hasError('duplicate') && formSubmitted"
+                        <span *ngIf="regForm.get('email').hasError('duplicate') && formRegisterSubmitted"
                               class="error-message mx-auto">Данный email занят</span>
 
                         <div class="input-group mt-3">
@@ -78,10 +83,10 @@
                                        class="input-group-text cursor-pointer">Пароль</label>
                             </div>
                             <input type="password" id="registrationPassword" #password class="form-control"
-                                   [class.error-input]="regForm.get('password').invalid && formSubmitted"
+                                   [class.error-input]="regForm.get('password').invalid && formRegisterSubmitted"
                                    placeholder="Введите пароль" name="registrationPassword" formControlName="password">
                         </div>
-                        <span *ngIf="regForm.get('password').hasError('required') && formSubmitted"
+                        <span *ngIf="regForm.get('password').hasError('required') && formRegisterSubmitted"
                               class="error-message mx-auto">Пожалуйста, заполните поле «Пароль»</span>
 
                         <div class="input-group mt-3">
@@ -90,11 +95,11 @@
                                     Подтвердите пароль</label>
                             </div>
                             <input type="password" id="registrationPasswordRepeat" #passwordRepeat class="form-control"
-                                   [class.error-input]="regForm.get('password_repeat').invalid && formSubmitted"
+                                   [class.error-input]="regForm.get('password_repeat').invalid && formRegisterSubmitted"
                                    placeholder="Подтвердите пароль" name="registrationPasswordRepeat"
                                    formControlName="password_repeat">
                         </div>
-                        <div *ngIf="regForm.get('password_repeat').invalid && formSubmitted"
+                        <div *ngIf="regForm.get('password_repeat').invalid && formRegisterSubmitted"
                              class="col-12 text-center">
                             <span class="error-message">Введите подтверждение пароля</span>
                         </div>
@@ -110,7 +115,7 @@
                     </form>
                     <div class="text-center">
                         <span *ngIf="loading">Идёт регистрация...</span>
-                        <span *ngIf="statusUserSave">Пользователь успешно зарегистрирован!!!</span>
+                        <span *ngIf="statusUserSave">Пользователь {{ regForm.get('login').value }} успешно зарегистрирован!!!</span>
                         <span *ngIf="errorMessage !== ''">{{errorMessage}}</span>
                     </div>
                 </div>
