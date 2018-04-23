@@ -30,68 +30,98 @@
 </nav>
 
 
-
 <!-- Modal регистрация -->
 <div class="modal fade bd-example-modal-lg info" [class.show]="registrModal">
-    <div class="modal-dialog modal-lg" role="document" *ngIf="registrModal">
+    <div class="modal-dialog modal-lg" *ngIf="registrModal">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="mx-auto">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Регистрация</h5>
+                    <h5 class="modal-title">Регистрация</h5>
                 </div>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span (click)="hideRegistrModal()">&times;</span>
+                <button type="button" class="close" (click)="hideRegistrModal()">
+                    <!--<span>&times;</span>-->
+                    <span>&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="container info-block">
-                    <div class="row info-row">
+                    <form class="row info-row" [formGroup]="regForm">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <label for="login" class="input-group-text cursor-pointer">Логин</label>
                             </div>
-                            <input id="login" class="form-control" [class.error-input]="false" placeholder="Введите логин"
-                                   name="login">
+                            <input id="login" class="form-control"
+                                   [class.error-input]="regForm.get('login').invalid && formSubmitted"
+                                   placeholder="Введите логин" name="login" formControlName="login">
                         </div>
-                        <span class="error-message mx-auto mb-3">Пожалуйста, заполните поле «Логин»</span>
+                        <span *ngIf="regForm.get('login').hasError('required') && formSubmitted"
+                              class="error-message mx-auto">Пожалуйста, заполните поле «Логин»</span>
 
-                        <div class="input-group">
+                        <div class="input-group mt-3">
                             <div class="input-group-prepend">
                                 <label for="registrationEmail" class="input-group-text cursor-pointer">Email</label>
                             </div>
-                            <input id="registrationEmail" class="form-control" placeholder="Введите email"
-                                   name="registrationEmail">
+                            <input id="registrationEmail" class="form-control"
+                                   [class.error-input]="regForm.get('email').invalid && formSubmitted"
+                                   placeholder="Введите email" name="registrationEmail" formControlName="email">
                         </div>
-                        <span class="error-message mx-auto mb-3">Пожалуйста, заполните поле «Email»</span>
-                        <span class="error-message mx-auto mb-3">Данный email занят</span>
-                        <span class="error-message mx-auto mb-3">Email заполнен не верно</span>
+                        <span *ngIf="regForm.get('email').hasError('required') && formSubmitted"
+                              class="error-message mx-auto">Пожалуйста, заполните поле «Email»</span>
+                        <span *ngIf="regForm.get('email').hasError('email') && formSubmitted && regForm.get('email').value !== ''"
+                              class="error-message mx-auto">Поле "Email" заполнен не верно</span>
+                        <span *ngIf="regForm.get('email').hasError('duplicate') && formSubmitted"
+                              class="error-message mx-auto">Данный email занят</span>
 
-                        <div class="input-group">
+                        <div class="input-group mt-3">
                             <div class="input-group-prepend">
-                                <label for="registrationPassword" class="input-group-text cursor-pointer">Пароль</label>
+                                <label for="registrationPassword"
+                                       class="input-group-text cursor-pointer">Пароль</label>
                             </div>
-                            <input type="password" id="registrationPassword" class="form-control" placeholder="Введите пароль"
-                                   name="registrationPassword">
+                            <input type="password" id="registrationPassword" #password class="form-control"
+                                   [class.error-input]="regForm.get('password').invalid && formSubmitted"
+                                   placeholder="Введите пароль" name="registrationPassword" formControlName="password">
                         </div>
-                        <span class="error-message mx-auto mb-3">Пароль заполнен не верно</span>
+                        <span *ngIf="regForm.get('password').hasError('required') && formSubmitted"
+                              class="error-message mx-auto">Пожалуйста, заполните поле «Пароль»</span>
 
-                        <div class="input-group">
+                        <div class="input-group mt-3">
                             <div class="input-group-prepend">
-                                <label for="registrationPasswordRepeat" class="input-group-text cursor-pointer">Подтвердите пароль</label>
+                                <label for="registrationPasswordRepeat" class="input-group-text cursor-pointer">
+                                    Подтвердите пароль</label>
                             </div>
-                            <input type="password" id="registrationPasswordRepeat" class="form-control" placeholder="Введите пароль"
-                                   name="registrationPasswordRepeat">
+                            <input type="password" id="registrationPasswordRepeat" #passwordRepeat class="form-control"
+                                   [class.error-input]="regForm.get('password_repeat').invalid && formSubmitted"
+                                   placeholder="Подтвердите пароль" name="registrationPasswordRepeat"
+                                   formControlName="password_repeat">
                         </div>
-                        <span class="error-message mx-auto mb-3">Пароли не совпадают</span>
+                        <div *ngIf="regForm.get('password_repeat').invalid && formSubmitted"
+                             class="col-12 text-center">
+                            <span class="error-message">Введите подтверждение пароля</span>
+                        </div>
+                        <div *ngIf="regForm.hasError('passwordsSame') && !regForm.get('password_repeat').hasError('required')"
+                             class="col-12 text-center">
+                            <span class="error-message">Пароли не совпадают</span>
+                        </div>
+                        <div class="col-12 text-center mt-3">
+                            <input type="checkbox" id="show_password" formControlName="show_password"
+                                   (change)="showPassword()" class="">
+                            <label for="show_password" class="cursor-pointer">Отобразить пароли</label>
+                        </div>
+                    </form>
+                    <div class="text-center">
+                        <span *ngIf="loading">Идёт регистрация...</span>
+                        <span *ngIf="statusUserSave">Пользователь успешно зарегистрирован!!!</span>
+                        <span *ngIf="errorMessage !== ''">{{errorMessage}}</span>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <div class="mx-auto">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="hideRegistrModal()">
-                        Close
-                    </button>
-                </div>
+            <div class="modal-footer mx-auto">
+                <button class="btn btn-secondary" (click)="registration(regForm.value)">
+                    Регистрация и вход
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="hideRegistrModal()">
+                    Закрыть
+                </button>
             </div>
         </div>
     </div>

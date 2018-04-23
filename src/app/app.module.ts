@@ -6,6 +6,10 @@ import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
+import { StorageService } from './storage.service';
+import { RequestService } from './request.service';
+import { UserService } from './user.service';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -16,9 +20,14 @@ import { HeaderComponent } from './header/header.component';
   imports: [
     BrowserModule,
       FormsModule,
-      ReactiveFormsModule
+      ReactiveFormsModule,
+      HttpClientModule,
   ],
-  providers: [],
+  providers: [
+      StorageService,
+      RequestService,
+      UserService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
