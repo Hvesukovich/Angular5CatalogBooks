@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RequestService } from '../request.service';
 import { UserService } from '../user.service';
 
@@ -10,17 +10,23 @@ import { UserService } from '../user.service';
 })
 export class HeaderComponent implements OnInit {
     public showMenu: boolean;
+    public loading: boolean;
+
+    /*Вход в систему:*/
+    public loginModal: boolean;
+    public loginForm: FormGroup;
+    @ViewChild('logPassword') logPassword: ElementRef;
+    public formLoginSubmitted: boolean;
+    public logErrorMessage: string;
+
+    /*Регистрация пользователя в системе*/
     public registrModal: boolean;
     public formRegisterSubmitted: boolean;
-    public formLoginSubmitted: boolean;
-    public loading: boolean;
-    public errorMessage: string;
-    public statusUserSave: boolean;
-
-    public loginForm: FormGroup;
     public regForm: FormGroup;
-    @ViewChild('password') password: ElementRef;
-    @ViewChild('passwordRepeat') passwordRepeat: ElementRef;
+    @ViewChild('regPassword') regPassword: ElementRef;
+    @ViewChild('regPasswordRepeat') regPasswordRepeat: ElementRef;
+    public regErrorMessage: string;
+    public statusUserSave: boolean;
 
     constructor(private formBuilder: FormBuilder,
                 private requestService: RequestService,
@@ -28,9 +34,29 @@ export class HeaderComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (!this.userService.activeUser) {
-            this.initLoginForm();
-        }
+    }
+
+
+    public showNavBar(): void {
+        this.showMenu = !this.showMenu;
+    }
+
+    /**
+     ** Обработка входа пользователя в систему
+     * */
+
+    public showLoginModal(): void {
+        this.loginModal = true;
+        this.initLoginForm();
+    }
+
+    public hideLoginModal(): void {
+        this.loginModal = false;
+        this.formLoginSubmitted = false;
+        this.loginForm.get('email').reset();
+        this.loginForm.get('password').reset();
+        this.loginForm.get('show_password').reset();
+        this.logErrorMessage = '';
     }
 
     private initLoginForm(): void {
@@ -43,8 +69,17 @@ export class HeaderComponent implements OnInit {
                 Validators.compose([
                     Validators.required
                 ])
-            ]}
-            );
+            ],
+            show_password: [false, []]
+        });
+    }
+
+    public showPasswordForLog(): void {
+        if (this.loginForm.get('show_password').value) {
+            this.logPassword.nativeElement.type = 'text';
+        } else {
+            this.logPassword.nativeElement.type = 'password';
+        }
     }
 
     public onLoginSubmit(value: any): void {
@@ -56,18 +91,18 @@ export class HeaderComponent implements OnInit {
                 .forEach(controlName => controls[controlName].markAsTouched());
             return;
         }
-
+        this.loading = true;
         const dataVerification = { email: value.email, password: value.password };
         this.requestService.verificationUser(dataVerification)
             .subscribe(result => {
+                    this.loading = false;
                     if (result) {
                         if (result['error']) {
-                            console.log('Проверьте правильность ввода данных');
+                            this.logErrorMessage = result['message'];
                         } else {
                             this.userService.saveUserInfoInLocalStorage(result[0]);
                             this.userService.setActiveUser(result[0]['login']);
-                            this.loginForm.get('email').reset();
-                            this.loginForm.get('password').reset();
+                            this.hideLoginModal();
                         }
                     }
                 },
@@ -79,9 +114,13 @@ export class HeaderComponent implements OnInit {
 
     }
 
-    public showNavBar(): void {
-        this.showMenu = !this.showMenu;
-    }
+    /**
+     ** Конец обработки входа пользователя в систему
+     * */
+
+    /**
+     ** Регистрация пользователя в системе
+     * */
 
     public showRegistrModal(): void {
         this.registrModal = true;
@@ -97,7 +136,7 @@ export class HeaderComponent implements OnInit {
         this.regForm.get('password_repeat').reset();
         this.regForm.get('show_password').reset();
         this.statusUserSave = false;
-        this.errorMessage = '';
+        this.regErrorMessage = '';
     }
 
     private initRegForm(): void {
@@ -151,14 +190,13 @@ export class HeaderComponent implements OnInit {
                     this.loading = false;
                     if (result) {
                         if (result['error']) {
-                            this.errorMessage = result['message'];
+                            this.regErrorMessage = result['message'];
                             this.statusUserSave = false;
                         } else {
                             this.statusUserSave = true;
-                            this.errorMessage = '';
                             this.userService.saveUserInfoInLocalStorage(result);
                             this.userService.setActiveUser(result['login']);
-                            setTimeout( () => this.hideRegistrModal(), 2000);
+                            setTimeout(() => this.hideRegistrModal(), 2000);
                         }
                     }
                 },
@@ -169,15 +207,19 @@ export class HeaderComponent implements OnInit {
             );
     }
 
-    public showPassword(): void {
+    public showPasswordForReg(): void {
         if (this.regForm.get('show_password').value) {
-            this.password.nativeElement.type = 'text';
-            this.passwordRepeat.nativeElement.type = 'text';
+            this.regPassword.nativeElement.type = 'text';
+            this.regPasswordRepeat.nativeElement.type = 'text';
         } else {
-            this.password.nativeElement.type = 'password';
-            this.passwordRepeat.nativeElement.type = 'password';
+            this.regPassword.nativeElement.type = 'password';
+            this.regPasswordRepeat.nativeElement.type = 'password';
         }
     }
+
+    /**
+     ** Конец регистрации пользователя в системе
+     * */
 
     public outUser(): void {
         this.userService.outUser();
