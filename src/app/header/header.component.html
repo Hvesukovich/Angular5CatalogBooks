@@ -7,10 +7,10 @@
         <ul class="navbar-nav mr-auto">
             <!--<li class="nav-item active">-->
             <li class="nav-item">
-                <a class="nav-link" href="#">Админка</a>
+                <a class="nav-link"  routerLink="/admin">Админка</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Для пользователя</a>
+                <a class="nav-link"  routerLink="/products">Для пользователя</a>
             </li>
         </ul>
         <div *ngIf="!userService.activeUser">
